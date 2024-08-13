@@ -6,11 +6,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $username = $_POST['username'];
     $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
    
-    $stmt = $pdo->prepare("INSERT INTO users (username, password) VALUES (?, ?)");
-    if ($stmt->execute([$username, $password])) {
-        echo "<span class="sucess">Registro bem-sucedido! <a href='login.php'>Faça login</a></span>";
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM users WHERE username = ?");
+    $stmt->execute([$username]);
+    $userCount = $stmt->fetchColumn();
+    
+    if ($userCount > 0) {
+        // Nome de usuário já existe
+        echo "Nome de usuário já está em uso. Tente outro.";
     } else {
-        echo "<span>Erro ao registrar.</span>";
+        // Inserir novo usuário
+        $stmt = $pdo->prepare("INSERT INTO users (username, password) VALUES (?, ?)");
+        if ($stmt->execute([$username, $password])) {
+            echo "Registro bem-sucedido! <a href='login.php'>Faça login</a>";
+        } else {
+            echo "Erro ao registrar.";
+        }
     }
 }
 ?>
